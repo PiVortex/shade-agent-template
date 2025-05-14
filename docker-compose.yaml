@@ -1,7 +1,7 @@
 services:
     web:
         platform: linux/amd64 # Explicitly set for TDX
-        image: pivortex/based-agent-template:latest@sha256:5dd1a11397c3d3893df634b38706bceebdf2048bf9b1fdb31a99bfb
+        image: pivortex/based-agent-template:latest@sha256:5dd1a11397c3d3893df634b38706bceebdf2048bf9b1fdb31a99bfb0197e353f
         container_name: web
         ports:
             - '3000:3000'
