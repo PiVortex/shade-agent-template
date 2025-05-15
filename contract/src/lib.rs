@@ -55,14 +55,6 @@ impl Contract {
 
     // examples for method access control
 
-    /// will throw on client if caller is not verified for the provided codehash
-    pub fn is_verified_by_codehash(&mut self, codehash: String) {
-        self.require_worker(codehash);
-
-        // worker agent does something amazing here
-        log!("The agent abides.")
-    }
-
     pub fn approve_codehash(&mut self, codehash: String) {
         // !!! UPGRADE TO YOUR METHOD OF MANAGING APPROVED WORKER AGENT CODEHASHES !!!
         self.require_owner();
@@ -70,13 +62,13 @@ impl Contract {
     }
 
     /// will throw on client if worker agent is not registered with a codehash in self.approved_codehashes
-    pub fn is_verified_by_approved_codehash(&mut self) {
+    pub fn send_random_number(&mut self, random_number: u64) {
         let worker = self.get_worker(env::predecessor_account_id());
 
         require!(self.approved_codehashes.contains(&worker.codehash));
 
         // worker agent does something amazing here
-        log!("The agent abides.")
+        log!("{}", random_number);
     }
 
     // register args see: https://github.com/mattlockyer/based-agent-template/blob/main/pages/api/register.js

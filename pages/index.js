@@ -151,48 +151,6 @@ export default function Home() {
                                 href="#"
                                 className={styles.card}
                                 onClick={async () => {
-                                    setMessage('Calling get_worker');
-
-                                    let res;
-                                    try {
-                                        res = await contractView({
-                                            accountId: accountId,
-                                            methodName: 'get_worker',
-                                            args: {
-                                                account_id: accountId,
-                                            },
-                                        });
-
-                                        console.log(res);
-                                    } catch (e) {
-                                        console.log(e);
-                                        setMessageHide(
-                                            'get_worker error: ' +
-                                                JSON.stringify(e, 4),
-                                        );
-                                    }
-
-                                    setMessageHide(
-                                        <>
-                                            <p>get_worker response:</p>
-                                            <p className={styles.code}>
-                                                checksum: {res.checksum}
-                                            </p>
-                                            <p className={styles.code}>
-                                                codehash: {res.codehash}
-                                            </p>
-                                        </>,
-                                    );
-                                }}
-                            >
-                                <h3>Get Worker Info</h3>
-                                <p>(registered only)</p>
-                            </a>
-
-                            <a
-                                href="#"
-                                className={styles.card}
-                                onClick={async () => {
                                     setMessage(
                                         'Calling is_verified_by_codehash',
                                     );
@@ -202,19 +160,21 @@ export default function Home() {
                                     // this method will not throw
                                     // returns { verified: true|false }
                                     const res = await fetch(
-                                        '/api/isVerified',
+                                        '/api/sendRandom',
                                     ).then((r) => r.json());
 
                                     setMessageHide(
                                         <>
                                             <p>
-                                                is_verified_by_codehash
-                                                response:
+                                                {res.verified 
+                                                    ? 'Successfully verified and sent random number!'
+                                                    : 'Verification failed'}
                                             </p>
-                                            <p className={styles.code}>
-                                                verified:{' '}
-                                                {JSON.stringify(res.verified)}
-                                            </p>
+                                            {res.verified && (
+                                                <p className={styles.code}>
+                                                    Random number: {res.random_number}
+                                                </p>
+                                            )}
                                         </>,
                                     );
                                 }}

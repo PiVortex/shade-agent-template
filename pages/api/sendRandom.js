@@ -6,8 +6,11 @@ export const dynamic = 'force-dynamic';
 
 const endpoint = process.env.DSTACK_SIMULATOR_ENDPOINT;
 
-export default async function isVerified(req, res) {
+export default async function sendRandom(req, res) {
     const client = new TappdClient(endpoint);
+
+    // Generate random number between 1 and 1000
+    const random_number = Math.floor(Math.random() * 1000) + 1;
 
     // get tcb info from tappd
     const { tcb_info } = await client.getInfo();
@@ -20,9 +23,10 @@ export default async function isVerified(req, res) {
     let verified = false;
     try {
         await contractCall({
-            methodName: 'is_verified_by_codehash',
+            methodName: 'send_random_number',
             args: {
                 codehash,
+                random_number,
             },
         });
         verified = true;
@@ -30,5 +34,5 @@ export default async function isVerified(req, res) {
         verified = false;
     }
 
-    res.status(200).json({ verified });
+    res.status(200).json({ verified, random_number });
 }
