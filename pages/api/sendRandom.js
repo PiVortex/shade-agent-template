@@ -55,6 +55,7 @@ export default async function sendRandom(req, res) {
         
     } catch (e) {
         verified = false;
+        console.log(e);
     }
 
     console.log(signRes);
