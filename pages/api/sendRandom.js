@@ -26,6 +26,7 @@ const Evm = new chainAdapters.evm.EVM({
 });
 
 export default async function sendRandom(req, res) {
+  try {
     const client = new TappdClient(endpoint);
 
     // Generate random number between 1 and 1000
@@ -69,6 +70,10 @@ export default async function sendRandom(req, res) {
     console.log(txHash);
 
     res.status(200).json({ verified, random_number });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ error: e.message });
+  }
 }
 
 async function createEthTx(random_number, ethContractAbi) {
