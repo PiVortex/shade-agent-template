@@ -1,14 +1,17 @@
 use hex::{decode, encode};
 use near_sdk::{
     env::{self, block_timestamp},
-    log, near, require,
+    near, require,
     store::{IterableMap, IterableSet},
-    AccountId, PanicOnDefault,
+    AccountId, Gas, NearToken, PanicOnDefault, Promise,
 };
 
 use dcap_qvl::{verify, QuoteCollateralV3};
 
 mod collateral;
+mod ecdsa;
+mod external;
+mod utils;
 
 #[near(serializers = [json, borsh])]
 #[derive(Clone)]
@@ -62,13 +65,12 @@ impl Contract {
     }
 
     /// will throw on client if worker agent is not registered with a codehash in self.approved_codehashes
-    pub fn send_random_number(&mut self, random_number: u64) {
+    pub fn send_random_number(&mut self, payload: Vec<u8>) -> Promise {
         let worker = self.get_worker(env::predecessor_account_id());
 
         require!(self.approved_codehashes.contains(&worker.codehash));
 
-        // worker agent does something amazing here
-        log!("{}", random_number);
+        ecdsa::get_sig(payload, "ethereum-1".to_string(), 0)
     }
 
     // register args see: https://github.com/mattlockyer/based-agent-template/blob/main/pages/api/register.js
@@ -88,7 +90,7 @@ impl Contract {
         let codehash = collateral::verify_codehash(tcb_info, rtmr3);
 
         // uncomment this line to only allow workers to register if their codehash arg is approved
-        // require!(self.approved_codehashes.contains(&codehash));
+        require!(self.approved_codehashes.contains(&codehash));
 
         let predecessor = env::predecessor_account_id();
         self.worker_by_account_id

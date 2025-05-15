@@ -152,7 +152,7 @@ export default function Home() {
                                 className={styles.card}
                                 onClick={async () => {
                                     setMessage(
-                                        'Calling is_verified_by_codehash',
+                                        'Sending random number to contract',
                                     );
 
                                     // we need to call the contract from the TEE through the backend API
@@ -179,8 +179,8 @@ export default function Home() {
                                     );
                                 }}
                             >
-                                <h3>Call Protected Method</h3>
-                                <p>(registered only)</p>
+                                <h3>Send Random Number</h3>
+                                <p>(requires registration)</p>
                             </a>
                         </>
                     )}
