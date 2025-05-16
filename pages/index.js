@@ -98,10 +98,10 @@ export default function Home() {
                 </p>
                 <ol>
                     <li>
-                        Fund the worker agent with NEAR tokens (0.1 NEAR will do)
+                        Fund the worker agent with testnet NEAR tokens (1 will do)
                     </li>
                     <li>
-                        Fund the Ethereum Sepolia account (0.001 ETH will do)
+                        Fund the Ethereum Sepolia account (0.001 will do)
                     </li>
                     <li>
                         Register the worker agent in the NEAR smart contract
@@ -175,12 +175,12 @@ export default function Home() {
                                     try {
                                         if(navigator.clipboard && navigator.clipboard.writeText) {
                                             navigator.clipboard.writeText(accountId);
-                                            setMessageHide('Copied', 500);
+                                            setMessageHide('Copied', 500, true);
                                         } else {
-                                            setMessageHide('Clipboard not supported');
+                                            setMessageHide('Clipboard not supported', 3000, true);
                                         }
                                     } catch (e) {
-                                        setMessageHide('Copy failed');
+                                        setMessageHide('Copy failed', 3000, true);
                                     }
                                 }}
                             >
@@ -192,6 +192,19 @@ export default function Home() {
                             {balance
                                 ? formatNearAmount(balance.available, 4)
                                 : 0}
+                            <br />
+                            <a 
+                                href="https://near-faucet.io/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{ 
+                                    color: '#0070f3', 
+                                    textDecoration: 'none',
+                                    fontSize: '0.9rem'
+                                }}
+                            >
+                                Get Testnet NEAR tokens from faucet →
+                            </a>
                         </p>
                     </div>
 
@@ -211,12 +224,12 @@ export default function Home() {
                                             try {
                                                 if(navigator.clipboard && navigator.clipboard.writeText) {
                                                     navigator.clipboard.writeText(ethAddress);
-                                                    setMessageHide('Copied', 500);
+                                                    setMessageHide('Copied', 500, true);
                                                 } else {
-                                                    setMessageHide('Clipboard not supported');
+                                                    setMessageHide('Clipboard not supported', 3000, true);
                                                 }
                                             } catch (e) {
-                                                setMessageHide('Copy failed');
+                                                setMessageHide('Copy failed', 3000, true);
                                             }
                                         }}
                                     >
@@ -225,6 +238,19 @@ export default function Home() {
                                     <br />
                                     <br />
                                     Balance: {ethBalance ? Number(ethBalance).toFixed(4) : '0'} ETH
+                                    <br />
+                                    <a 
+                                        href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        style={{ 
+                                            color: '#0070f3', 
+                                            textDecoration: 'none',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        Get Sepolia ETH from faucet →
+                                    </a>
                                 </>
                             ) : (
                                 'Loading...'

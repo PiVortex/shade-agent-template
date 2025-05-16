@@ -1,12 +1,7 @@
-import { TappdClient } from '../../utils/tappd';
-import 'dotenv/config';
 import { contractCall } from '@neardefi/shade-agent-js';
 import { EthereumVM } from '../../utils/ethereum';
 import { ethContractAbi } from '../../utils/ethereum';
 
-export const dynamic = 'force-dynamic';
-
-const endpoint = process.env.DSTACK_SIMULATOR_ENDPOINT;
 const ethRpcUrl = 'https://sepolia.drpc.org';
 const contractId = process.env.NEXT_PUBLIC_contractId;
 const ethContractAddress = '0x0414Da715f522d3952A09c52310780f76FE33291';
@@ -14,22 +9,6 @@ const ethContractAddress = '0x0414Da715f522d3952A09c52310780f76FE33291';
 const Evm = new EthereumVM(ethRpcUrl);
 
 export default async function sendRandom(req, res) {
-    const client = new TappdClient(endpoint);
-
-    // Get codehash based on environment
-    let codehash; // Default for non-TEE environment
-    
-    if (process.env.NODE_ENV === 'production') {
-      const { tcb_info } = await client.getInfo();
-      const { app_compose } = JSON.parse(tcb_info);
-      let [codehashMatch] = app_compose.match(/sha256:([a-f0-9]*)/gim) || [];
-      if (codehashMatch) {
-        codehash = codehashMatch.replace('sha256:', '');
-      }
-    } else {
-        codehash = 1;
-    }
-
     // Generate random number between 1 and 1000
     const random_number = Math.floor(Math.random() * 1000) + 1;
     const {payload, transaction} = await getRandomNumberPayload(random_number);
@@ -43,7 +22,6 @@ export default async function sendRandom(req, res) {
         signRes = await contractCall({
             methodName: 'send_random_number',
             args: {
-                codehash,
                 payload,
             },
         });
