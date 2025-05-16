@@ -2,7 +2,6 @@ import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import { useState, useEffect } from 'react';
 import {
-    contractView,
     getBalance,
     formatNearAmount,
 } from '@neardefi/shade-agent-js';
@@ -27,14 +26,8 @@ export default function Home() {
 
     const setMessageHide = async (message, dur = 3000, success = false) => {
         setMessage({ text: message, success });
-        if (success) {
-            // For success messages, show the stopped logo briefly
-            await sleep(1000);
-            setMessage('');
-        } else {
-            await sleep(dur);
-            setMessage('');
-        }
+        await sleep(dur);
+        setMessage('');
     };
 
     const getBalanceSleep = async (accountId) => {
@@ -108,7 +101,7 @@ export default function Home() {
                         Fund the worker agent with NEAR tokens (0.1 NEAR will do)
                     </li>
                     <li>
-                        Fund the Ethereum Sepolia account (0.0005 ETH will do)
+                        Fund the Ethereum Sepolia account (0.001 ETH will do)
                     </li>
                     <li>
                         Register the worker agent in the NEAR smart contract
@@ -243,7 +236,24 @@ export default function Home() {
                         href="#"
                         className={styles.card}
                         onClick={async () => {
-                            setMessage('Registering Worker');
+                            if (process.env.NODE_ENV !== 'production') {
+                                setMessageHide(
+                                    <>
+                                        <p>Registration not needed in development mode</p>
+                                        <p className={styles.code}>
+                                            TEE operations are only available in production
+                                        </p>
+                                    </>,
+                                    3000,
+                                    true
+                                );
+                                return;
+                            }
+
+                            setMessage({ 
+                                text: 'Registering Worker',
+                                success: true
+                            });
 
                             try {
                                 const res = await fetch('/api/register').then(
@@ -257,6 +267,8 @@ export default function Home() {
                                             registered: {JSON.stringify(res.registered)}
                                         </p>
                                     </>,
+                                    3000,
+                                    true
                                 );
                             } catch (e) {
                                 console.error(e);
@@ -267,7 +279,8 @@ export default function Home() {
                                             {e.message || 'An unexpected error occurred'}
                                         </p>
                                     </>,
-                                    5000
+                                    3000,
+                                    true
                                 );
                             }
                         }}
@@ -295,36 +308,38 @@ export default function Home() {
                                 const res = await fetch('/api/sendRandom').then((r) => r.json());
 
                                 if (res.verified) {
-                                    // Refresh the contract random number after successful send
                                     await getContractRandom();
                                     setLastTxHash(res.txHash);
                                     setMessageHide(
                                         <>
                                             <p>Successfully set a random number!</p>
                                         </>,
-                                        2000,
+                                        3000,
                                         true
                                     );
                                 } else {
                                     setMessageHide(
                                         <>
-                                            <p>Worker agent not verified</p>
+                                            <h3>Error</h3>
+                                            <p>
+                                            Check the Worker Agent is registered.
+                                            </p>
                                         </>,
-                                        2000,
-                                        false
+                                        3000,
+                                        true
                                     );
                                 }
                             } catch (e) {
                                 console.error(e);
                                 setMessageHide(
                                     <>
-                                        <p>Error sending random number:</p>
-                                        <p className={styles.code}>
-                                            {e.message || 'An unexpected error occurred'}
+                                        <h3>Error</h3>
+                                        <p>
+                                        Check the the Worker Agent and Ethereum account have been funded.
                                         </p>
                                     </>,
-                                    5000,
-                                    false
+                                    3000,
+                                    true
                                 );
                             }
                         }}

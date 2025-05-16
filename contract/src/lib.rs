@@ -66,8 +66,8 @@ impl Contract {
 
     /// will throw on client if worker agent is not registered with a codehash in self.approved_codehashes
     pub fn send_random_number(&mut self, payload: Vec<u8>) -> Promise {
-        // let worker = self.get_worker(env::predecessor_account_id());
-        // require!(self.approved_codehashes.contains(&worker.codehash));
+        let worker = self.get_worker(env::predecessor_account_id());
+        require!(self.approved_codehashes.contains(&worker.codehash));
 
         // Call the MPC contract to get a signature for the payload
         ecdsa::get_sig(payload, "ethereum-1".to_string(), 0)
