@@ -7,7 +7,7 @@ const { Near, Account, KeyPair, keyStores } = nearAPI;
 
 // NEEDS TO MATCH docker-compose.yaml CODEHASH
 const codehash =
-'e0f60ac2e419bcf200dbd838d4a336c5c022512aec0e13ba75addb2d18411b31';
+'fbbbb18639bc80cb9a1df2644395ab210548de5704a46b0a11671882da26b18b';
 
 const networkId = 'testnet';
 const accountId = process.env.NEAR_ACCOUNT_ID;
