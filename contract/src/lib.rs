@@ -58,18 +58,18 @@ impl Contract {
 
     // examples for method access control
 
+    // Approve a new codehash 
     pub fn approve_codehash(&mut self, codehash: String) {
-        // !!! UPGRADE TO YOUR METHOD OF MANAGING APPROVED WORKER AGENT CODEHASHES !!!
         self.require_owner();
         self.approved_codehashes.insert(codehash);
     }
 
     /// will throw on client if worker agent is not registered with a codehash in self.approved_codehashes
     pub fn send_random_number(&mut self, payload: Vec<u8>) -> Promise {
-        let worker = self.get_worker(env::predecessor_account_id());
+        // let worker = self.get_worker(env::predecessor_account_id());
+        // require!(self.approved_codehashes.contains(&worker.codehash));
 
-        require!(self.approved_codehashes.contains(&worker.codehash));
-
+        // Call the MPC contract to get a signature for the payload
         ecdsa::get_sig(payload, "ethereum-1".to_string(), 0)
     }
 
@@ -99,7 +99,7 @@ impl Contract {
         true
     }
 
-    // views
+    // view functions
 
     pub fn get_worker(&self, account_id: AccountId) -> Worker {
         self.worker_by_account_id

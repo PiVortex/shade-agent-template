@@ -1,9 +1,9 @@
 import { TappdClient } from '../../utils/tappd';
 import 'dotenv/config';
 import { contractCall } from '@neardefi/shade-agent-js';
-import { contracts, chainAdapters } from 'chainsig.js';
-import { createPublicClient, http } from "viem";
-import { Contract, JsonRpcProvider } from 'ethers';
+import { EthereumVM } from '../../utils/ethereum';
+import { ethContractAbi } from '../../utils/ethereum';
+
 export const dynamic = 'force-dynamic';
 
 const endpoint = process.env.DSTACK_SIMULATOR_ENDPOINT;
@@ -11,119 +11,79 @@ const ethRpcUrl = 'https://sepolia.drpc.org';
 const contractId = process.env.NEXT_PUBLIC_contractId;
 const ethContractAddress = '0x0414Da715f522d3952A09c52310780f76FE33291';
 
-const MPC_CONTRACT = new contracts.ChainSignatureContract({
-    networkId: 'testnet',
-    contractId: 'v1.signer-prod.testnet',
-});
-
-const publicClient = createPublicClient({
-    transport: http(ethRpcUrl),
-});
-
-const Evm = new chainAdapters.evm.EVM({
-    publicClient,
-    contract: MPC_CONTRACT,
-});
+const Evm = new EthereumVM(ethRpcUrl);
 
 export default async function sendRandom(req, res) {
-  try {
     const client = new TappdClient(endpoint);
+
+    // Get codehash based on environment
+    let codehash; // Default for non-TEE environment
+    
+    if (process.env.NODE_ENV === 'production') {
+      const { tcb_info } = await client.getInfo();
+      const { app_compose } = JSON.parse(tcb_info);
+      let [codehashMatch] = app_compose.match(/sha256:([a-f0-9]*)/gim) || [];
+      if (codehashMatch) {
+        codehash = codehashMatch.replace('sha256:', '');
+      }
+    } else {
+        codehash = 1;
+    }
 
     // Generate random number between 1 and 1000
     const random_number = Math.floor(Math.random() * 1000) + 1;
-
-    // get tcb info from tappd
-    const { tcb_info } = await client.getInfo();
-    const { app_compose } = JSON.parse(tcb_info);
-    // first sha256: match of docker-compose.yaml will be codehash (arrange docker-compose.yaml accordingly)
-    let [codehash] = app_compose.match(/sha256:([a-f0-9]*)/gim);
-
-    codehash = codehash.replace('sha256:', '');
-
-    const {transaction, hashesToSign} = await createEthTx(random_number, ethContractAbi);
+    const {payload, transaction} = await getRandomNumberPayload(random_number);
+    console.log(payload);
 
     let verified = false;
     let signRes;
+    let errorMessage;
+    // Call the near smart contract to get a signature for the payload
     try {
         signRes = await contractCall({
             methodName: 'send_random_number',
             args: {
                 codehash,
-                hashesToSign,
+                payload,
             },
         });
         verified = true;
         
     } catch (e) {
         verified = false;
-        console.log(e);
+        console.error('Contract call error:', e);
+        errorMessage = e.message || 'Failed to send random number';
     }
 
-    console.log(signRes);
-
-    const signedTx = Evm.finalizeTransactionSigning({
-        transaction,
-        rsvSignatures: signRes,
-    })
-
-    const txHash = await Evm.broadcastTx(signedTx);
-    console.log(txHash);
-
-    res.status(200).json({ verified, random_number });
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({ error: e.message });
-  }
-}
-
-async function createEthTx(random_number, ethContractAbi) {
-
-      const provider = new JsonRpcProvider(ethRpcUrl);
-      const contract = new Contract(ethContractAddress, ethContractAbi, provider);
-      const data = contract.interface.encodeFunctionData("updateRandom", [random_number]);
-
-      const { address } = await Evm.deriveAddressAndPublicKey(
-        contractId,
-        'ethereum-1'
-      );
-      
-      console.log('Derived Ethereum address:', address);
-
-      const {transaction, hashesToSign} = await Evm.prepareTransactionForSigning({
-        from: address,
-        to: ethContractAddress,
-        data,
-      });
-      
-
-      return {transaction, hashesToSign};
-}
-
-const ethContractAbi = [
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_random",
-          "type": "uint256"
-        }
-      ],
-      "name": "updateRandom",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getRandom",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+    if (!verified) {
+        res.status(400).json({ verified, error: errorMessage });
+        return;
     }
-  ]  
+
+    // Reconstruct the signed transaction
+    const {big_r, s, recovery_id} = signRes;
+    const signedTransaction = await Evm.reconstructSignedTransaction(
+      big_r,
+      s,
+      recovery_id,
+      transaction
+    );
+
+    // Broadcast the signed transaction
+    const txHash = await Evm.broadcastTX(signedTransaction);
+
+    res.status(200).json({ verified, txHash });
+}
+
+async function getRandomNumberPayload(random_number) {
+  const { address: senderAddress } = Evm.deriveAddress(contractId, "ethereum-1");
+  const data = Evm.createTransactionData(ethContractAddress, ethContractAbi, 'updateRandom', [random_number]);
+  const { transaction } = await Evm.createTransaction({
+    sender: senderAddress,
+    receiver: ethContractAddress,
+    amount: 0,
+    data,
+  });
+  const payload = await Evm.getPayload({ transaction });
+  return {payload, transaction};
+}

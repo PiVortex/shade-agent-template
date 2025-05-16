@@ -2,7 +2,7 @@ use crate::*;
 use external::{mpc_contract, SignRequest};
 
 const GAS: Gas = Gas::from_tgas(50);
-const ATTACHED_DEPOSIT: NearToken = NearToken::from_yoctonear(500000000000000000000000);
+const ATTACHED_DEPOSIT: NearToken = NearToken::from_yoctonear(1);
 
 pub fn get_sig(payload: Vec<u8>, path: String, key_version: u32) -> Promise {
     let request = SignRequest {

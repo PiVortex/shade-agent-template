@@ -5,7 +5,18 @@ export default function Overlay({ message }) {
 
     return (
         <div className={styles.overlay}>
-            <div className={styles.message}>{message}</div>
+            <div className={styles.message}>
+                {message.text}
+                {!message.success && (
+                    <div className={styles.spinnerContainer}>
+                        <img 
+                            src="/symbol.svg" 
+                            alt="Proximity Logo" 
+                            className={styles.spinningLogo}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
