@@ -12,7 +12,7 @@ import { ethContractAbi } from '../utils/ethereum';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const ethRpcUrl = 'https://sepolia.drpc.org';
-const ethContractAddress = '0x0414Da715f522d3952A09c52310780f76FE33291';
+const ethContractAddress = '0xb8d9b079F1604e9016137511464A1Fe97F8e2Bd8';
 const Evm = new EthereumVM(ethRpcUrl);
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
     const [balance, setBalance] = useState({ available: '0' });
     const [ethAddress, setEthAddress] = useState('');
     const [ethBalance, setEthBalance] = useState('0');
-    const [contractRandom, setContractRandom] = useState(null);
+    const [contractPrice, setContractPrice] = useState(null);
     const [lastTxHash, setLastTxHash] = useState(null);
 
     const setMessageHide = async (message, dur = 3000, success = false) => {
@@ -52,16 +52,18 @@ export default function Home() {
         }
     };
 
-    const getContractRandom = async () => {
+    const getContractPrice = async () => {
         try {
-            const random = await Evm.getContractViewFunction(
+            const price = await Evm.getContractViewFunction(
                 ethContractAddress,
                 ethContractAbi,
-                'getRandom'
+                'getPrice'
             );
-            setContractRandom(random.toString());
+            // Divide by 100 to get the actual price with 2 decimal places
+            const displayPrice = (parseInt(price.toString()) / 100).toFixed(2);
+            setContractPrice(displayPrice);
         } catch (error) {
-            console.error('Error fetching contract random:', error);
+            console.error('Error fetching contract price:', error);
         }
     };
 
@@ -74,10 +76,10 @@ export default function Home() {
     useEffect(() => {
         deriveAccount();
         getEthInfo();
-        getContractRandom();
+        getContractPrice();
         const interval = setInterval(() => {
             getEthInfo();
-            getContractRandom();
+            getContractPrice();
         }, 10000);
         return () => clearInterval(interval);
     }, []);
@@ -85,16 +87,18 @@ export default function Home() {
     return (
         <div className={styles.container}>
             <Head>
-                <title>Verifiable Random Number</title>
+                <title>ETH Price Oracle</title>
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Overlay message={message} />
 
             <main className={styles.main}>
-                <h1 className={styles.title}>Verifiable Random Numbers</h1>
-                <h2 className={styles.subtitle}> Powered by Shade Agents</h2>
+                <h1 className={styles.title}>ETH Price Oracle</h1>
+                <div className={styles.subtitleContainer}>
+                    <h2 className={styles.subtitle}>Powered by Shade Agents</h2>
+                </div>
                 <p>
-                    This is a simple example of a verifiable random number oracle for an ethereum smart contract using shade agents.
+                    This is a simple example of a verifiable price oracle for an ethereum smart contract using shade agents.
                 </p>
                 <ol>
                     <li>
@@ -107,11 +111,11 @@ export default function Home() {
                         Register the worker agent in the NEAR smart contract
                     </li>
                     <li>
-                        Send a verifiable random number to the Ethereum contract
+                        Send the ETH price to the Ethereum contract
                     </li>
                 </ol>
 
-                {contractRandom !== null && (
+                {contractPrice !== null && (
                     <div style={{ 
                         background: '#f5f5f5', 
                         padding: '1.25rem', 
@@ -126,14 +130,14 @@ export default function Home() {
                             margin: '0 0 0.5rem 0',
                             color: '#666',
                             fontSize: '1.1rem'
-                        }}>Current Random Number</h3>
+                        }}>Current Set ETH Price</h3>
                         <p style={{ 
                             fontSize: '2rem', 
                             margin: '0',
                             fontFamily: 'monospace',
                             color: '#333'
                         }}>
-                            {contractRandom}
+                            ${contractPrice}
                         </p>
                     </div>
                 )}
@@ -326,19 +330,19 @@ export default function Home() {
                         className={styles.card}
                         onClick={async () => {
                             setMessage({ 
-                                text: 'Generating and sending a random number to the Ethereum contract...',
+                                text: 'Querying and sending the ETH price to the Ethereum contract...',
                                 success: false
                             });
 
                             try {
-                                const res = await fetch('/api/sendRandom').then((r) => r.json());
+                                const res = await fetch('/api/sendPrice').then((r) => r.json());
 
                                 if (res.verified) {
-                                    await getContractRandom();
+                                    await getContractPrice();
                                     setLastTxHash(res.txHash);
                                     setMessageHide(
                                         <>
-                                            <p>Successfully set a random number!</p>
+                                            <p>Successfully set the ETH price!</p>
                                         </>,
                                         3000,
                                         true
@@ -370,10 +374,10 @@ export default function Home() {
                             }
                         }}
                     >
-                        <h3>Send Random Number</h3>
+                        <h3>Set ETH Price</h3>
                         <p>(requires registration)</p>
                         <p className={styles.code}>
-                            Click to send a random number between 1 and 1000
+                            Click to set the ETH price in the smart contract
                         </p>
                     </a>
                 </div>
@@ -385,7 +389,6 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    Powered by{' '}
                     <img
                         src="/symbol.svg"
                         alt="Proximity Logo"

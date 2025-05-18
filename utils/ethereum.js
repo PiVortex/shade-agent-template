@@ -14,18 +14,18 @@ export const ethContractAbi = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_random",
+        "name": "_price",
         "type": "uint256"
       }
     ],
-    "name": "updateRandom",
+    "name": "updatePrice",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "getRandom",
+    "name": "getPrice",
     "outputs": [
       {
         "internalType": "uint256",

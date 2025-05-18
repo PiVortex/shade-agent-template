@@ -1,26 +1,28 @@
 import { contractCall } from '@neardefi/shade-agent-js';
 import { EthereumVM } from '../../utils/ethereum';
 import { ethContractAbi } from '../../utils/ethereum';
+import { getEthereumPriceUSD } from '../../utils/fetch-eth-price';
 
 const ethRpcUrl = 'https://sepolia.drpc.org';
 const contractId = process.env.NEXT_PUBLIC_contractId;
-const ethContractAddress = '0x0414Da715f522d3952A09c52310780f76FE33291';
+const ethContractAddress = '0xb8d9b079F1604e9016137511464A1Fe97F8e2Bd8';
 
 const Evm = new EthereumVM(ethRpcUrl);
 
-export default async function sendRandom(req, res) {
-    // Generate random number between 1 and 1000
-    const random_number = Math.floor(Math.random() * 1000) + 1;
-    const {payload, transaction} = await getRandomNumberPayload(random_number);
-    console.log(payload);
+export default async function sendPrice(req, res) {
+
+  // Get the ETH price
+  const ethPrice = await getEthereumPriceUSD();
+
+  // Get the payload and transaction
+  const {payload, transaction} = await getPricePayload(ethPrice);
 
     let verified = false;
     let signRes;
-    let errorMessage;
     // Call the near smart contract to get a signature for the payload
     try {
         signRes = await contractCall({
-            methodName: 'send_random_number',
+            methodName: 'send_price',
             args: {
                 payload,
             },
@@ -30,11 +32,10 @@ export default async function sendRandom(req, res) {
     } catch (e) {
         verified = false;
         console.error('Contract call error:', e);
-        errorMessage = e.message || 'Failed to send random number';
     }
 
     if (!verified) {
-        res.status(400).json({ verified, error: errorMessage });
+        res.status(400).json({ verified, error: 'Failed to send price' });
         return;
     }
 
@@ -53,9 +54,9 @@ export default async function sendRandom(req, res) {
     res.status(200).json({ verified, txHash });
 }
 
-async function getRandomNumberPayload(random_number) {
+async function getPricePayload(price) {
   const { address: senderAddress } = Evm.deriveAddress(contractId, "ethereum-1");
-  const data = Evm.createTransactionData(ethContractAddress, ethContractAbi, 'updateRandom', [random_number]);
+  const data = Evm.createTransactionData(ethContractAddress, ethContractAbi, 'updatePrice', [price]);
   const { transaction } = await Evm.createTransaction({
     sender: senderAddress,
     receiver: ethContractAddress,

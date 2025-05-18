@@ -10,8 +10,8 @@ export default function Overlay({ message }) {
                 {!message.success && (
                     <div className={styles.spinnerContainer}>
                         <img 
-                            src="/symbol.svg" 
-                            alt="Proximity Logo" 
+                            src="/shade-agent.svg" 
+                            alt="Loading..." 
                             className={styles.spinningLogo}
                         />
                     </div>
