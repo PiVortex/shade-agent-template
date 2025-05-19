@@ -1,8 +1,8 @@
 {
     "private": true,
     "scripts": {
-        "test:contract": "cd contract && cargo near build non-reproducible-wasm && cd .. && ava ./tests/test.js --serial --timeout 30s",
-        "contract:deploy:linux": "cd contract && cargo near build non-reproducible-wasm && cd .. && node utils/deploy-contract.js",
+        "test:contract": "ava ./tests/test.js --serial --timeout 30s",
+        "contract:deploy": "cd contract && cargo near build non-reproducible-wasm && cd .. && node utils/deploy-contract.js",
         "contract:deploy:mac": "docker run --rm -it -v $(pwd):/code -w /code/contract rust:latest bash -c 'apt-get update && apt-get install -y clang llvm build-essential libudev-dev pkg-config && rustup target add wasm32-unknown-unknown && cargo install cargo-near && cargo near build non-reproducible-wasm' && node utils/deploy-contract.js",
         "dev": "next dev",
         "build": "next build",

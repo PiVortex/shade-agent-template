@@ -1,22 +1,20 @@
 import fs from 'fs';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: './.env.development.local' });
-import { parseSeedPhrase } from 'near-seed-phrase';
 import * as nearAPI from 'near-api-js';
 const { Near, Account, KeyPair, keyStores } = nearAPI;
 
 // NEEDS TO MATCH docker-compose.yaml CODEHASH
 const codehash =
-'62c5877a9abef103c74f8b6f269110ff957c59e7e51b42dbc09e1362ecc7b34c';
+'0bdee8c7caf303c18a29375d144b19cd54f8598d70cfcc47779a3aaec62fda5d';
 
 const networkId = 'testnet';
-const accountId = process.env.NEAR_ACCOUNT_ID;
-const contractId = process.env.NEAR_CONTRACT_ID;
+const accountId = process.env.NEXT_PUBLIC_accountId;
+const contractId = process.env.NEXT_PUBLIC_contractId;
 console.log(accountId, contractId);
 
-const { secretKey } = parseSeedPhrase(process.env.NEAR_SEED_PHRASE);
 const keyStore = new keyStores.InMemoryKeyStore();
-const keyPair = KeyPair.fromString(secretKey);
+const keyPair = KeyPair.fromString(process.env.NEXT_PUBLIC_secretKey);
 keyStore.setKey(networkId, accountId, keyPair);
 keyStore.setKey(networkId, contractId, keyPair);
 console.log(keyStore);
