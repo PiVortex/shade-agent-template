@@ -9,7 +9,7 @@ const ethContractAddress = '0xb8d9b079F1604e9016137511464A1Fe97F8e2Bd8';
 
 const Evm = new EthereumVM(ethRpcUrl);
 
-export default async function sendPrice(req, res) {
+export default async function sendTransaction(req, res) {
 
   // Get the ETH price
   const ethPrice = await getEthereumPriceUSD();
@@ -22,7 +22,7 @@ export default async function sendPrice(req, res) {
     // Call the near smart contract to get a signature for the payload
     try {
         signRes = await contractCall({
-            methodName: 'send_price',
+            methodName: 'agent_sign',
             args: {
                 payload,
             },

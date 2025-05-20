@@ -335,7 +335,7 @@ export default function Home() {
                             });
 
                             try {
-                                const res = await fetch('/api/sendPrice').then((r) => r.json());
+                                const res = await fetch('/api/sendTransaction').then((r) => r.json());
 
                                 if (res.verified) {
                                     await getContractPrice();
