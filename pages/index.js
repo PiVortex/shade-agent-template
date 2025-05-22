@@ -383,6 +383,24 @@ export default function Home() {
                 </div>
             </main>
 
+            <div style={{ 
+                textAlign: 'center',
+                marginBottom: '1rem'
+            }}>
+                <a
+                    href="https://fringe-brow-647.notion.site/Terms-for-Price-Oracle-1fb09959836d807a9303edae0985d5f3"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        color: '#0070f3',
+                        fontSize: '0.8rem',
+                        textDecoration: 'none'
+                    }}
+                >
+                    Terms of Use
+                </a>
+            </div>
+
             <footer className={styles.footer}>
                 <a
                     href="https://proximity.dev"
